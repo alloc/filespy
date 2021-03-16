@@ -36,16 +36,27 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   const skipped: string[] = []
   const emitter = new EventEmitter()
 
+  // Emits are queued until initial crawl is completed.
+  let emitQueue: [event: string, args: any[]][] | null = []
+  let emit = (event: string, ...args: any[]) => {
+    emitQueue!.push([event, args])
+  }
+
   // Wait for listeners to be attached.
   let watching: Promise<Watcher | undefined>
   setImmediate(() => {
     watching = crawl('')
       .then(async () => {
+        emit = emitter.emit.bind(emitter)
+        emitQueue!.forEach(([event, args]) => emit(event, ...args))
+        emitQueue = null
+
         const watcher = await watch(cwd, processEvents, {
           backend: opts.backend,
           ignore: skipped,
         })
-        emitter.emit('ready')
+
+        emit('ready')
         return watcher
       })
       .catch(onError)
@@ -55,7 +66,7 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
     if (err.code == 'EACCES') {
       addSkipped(err.path.slice(cwd.length + 1))
     }
-    emitter.emit('error', err)
+    emit('error', err)
     return undefined
   }
 
@@ -105,8 +116,8 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
 
   function addFile(file: string, stats: fs.Stats) {
     binaryInsert(files, file, sortPaths)
-    emitter.emit(CREATE, file, stats, cwd)
-    emitter.emit(ALL, CREATE, file, stats, cwd)
+    emit(CREATE, file, stats, cwd)
+    emit(ALL, CREATE, file, stats, cwd)
   }
 
   // Promise may reject for permission error.
@@ -126,8 +137,8 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
       if (!isDescendant(file, dir)) {
         break
       }
-      emitter.emit(DELETE, file, cwd)
-      emitter.emit(ALL, DELETE, file, null, cwd)
+      emit(DELETE, file, cwd)
+      emit(ALL, DELETE, file, null, cwd)
     }
 
     files.splice(fromIndex, i - fromIndex)
@@ -216,11 +227,11 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
             onError(err)
             continue
           }
-          emitter.emit(UPDATE, file, stats, cwd)
+          emit(UPDATE, file, stats, cwd)
         } else {
-          emitter.emit(DELETE, file, cwd)
+          emit(DELETE, file, cwd)
         }
-        emitter.emit(ALL, type, file, stats, cwd)
+        emit(ALL, type, file, stats, cwd)
       } else if (type == DELETE) {
         removeSkipped(file)
       }
