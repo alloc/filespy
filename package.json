@@ -49,6 +49,7 @@
     "watching",
     "fsevents",
     "inotify",
-    "crawl"
+    "crawl",
+    "chokidar"
   ]
 }
