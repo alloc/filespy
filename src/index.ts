@@ -276,7 +276,10 @@ function join(parent: string, child: string) {
 type QueuedEmit = [event: string, args: any[]] | null
 
 function wrapEmit(emitSync: (event: string, args: any[]) => void) {
-  // All emits are queued until "ready" event.
+  // Skip event filtering during the initial crawl.
+  let crawling = true
+
+  // Pretend to be processing until the "ready" event.
   let processing = true
 
   // The queue is reset whenever fully processed.
@@ -284,45 +287,53 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
 
   return (event: string, ...args: any[]) => {
     const [file, stats, cwd] = args
-
-    // Try to cancel out a "delete" event.
-    if (event == CREATE) {
-      const index = queue.findIndex(e => e && e[0] == DELETE && e[1] == file)
-      if (~index) {
-        queue[index] = null
-        event = UPDATE
-        args = [file, stats, cwd]
-      }
-    }
-
-    // Try to update a "create" or "update" event.
-    else if (event == UPDATE) {
-      const index = queue.findIndex(
-        e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1] == file
-      )
-      if (~index) {
-        queue[index]![1][1] = stats
-        return
-      }
-    }
-
-    // Try to cancel out a "create" or "update" event.
-    else if (event == DELETE) {
-      const index = queue.findIndex(
-        e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1] == file
-      )
-      if (~index) {
-        const [event] = queue[index]!
-        queue[index] = null
-        if (event == CREATE) {
-          return // Skip "delete" event since "create" was never handled.
+    if (!crawling) {
+      // Try to cancel out a "delete" event.
+      if (event == CREATE) {
+        const index = queue.findIndex(e => e && e[0] == DELETE && e[1] == file)
+        if (~index) {
+          queue[index] = null
+          event = UPDATE
+          args = [file, stats, cwd]
         }
       }
+
+      // Try to update a "create" or "update" event.
+      else if (event == UPDATE) {
+        const index = queue.findIndex(
+          e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1] == file
+        )
+        if (~index) {
+          queue[index]![1][1] = stats
+          return
+        }
+      }
+
+      // Try to cancel out a "create" or "update" event.
+      else if (event == DELETE) {
+        const index = queue.findIndex(
+          e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1] == file
+        )
+        if (~index) {
+          const [event] = queue[index]!
+          queue[index] = null
+          if (event == CREATE) {
+            return // Skip "delete" event since "create" was never handled.
+          }
+        }
+      }
+
+      // Process crawl events now that the watcher is ready.
+      else if (event == 'ready') {
+        processing = false
+      }
     }
 
-    // Process crawl events now that the watcher is ready.
-    else if (event == 'ready') {
-      processing = false
+    // Enable event filtering once the root directory is crawled.
+    else if (event == 'crawl') {
+      if (!file) {
+        crawling = false
+      }
     }
 
     // Listeners may be blocking us, or the watcher is initializing.
