@@ -22,7 +22,7 @@
 
 &nbsp;
 
-### Usage
+## Usage
 
 ```ts
 import filespy from 'filespy'
@@ -55,7 +55,9 @@ spy.skipped // Sorted list of existing paths that were skipped.
 spy.close()
 ```
 
-### Events
+&nbsp;
+
+## Events
 
 - `all` event
   - `event`: "create", "update", or "delete"
@@ -84,7 +86,9 @@ spy.close()
   - `file`
   - `cwd`
 
-### Pattern syntax
+&nbsp;
+
+## Pattern syntax
 
 Filespy mixes globbing with regular expressions, a concept borrowed from [Recrawl](https://github.com/aleclarson/recrawl).
 
