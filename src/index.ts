@@ -38,19 +38,43 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   const ignored: string[] = []
   const emitter = new EventEmitter()
 
+  const watcherOpts = {
+    backend: opts.backend,
+    ignore: ignored,
+  }
+
+  // Skip "create" events on initial crawl when a snapshot exists.
+  let hasSnapshot = !!opts.snapshotPath && fs.existsSync(opts.snapshotPath)
+  let skipMutation = false
+
   // Wait for listeners to be attached.
   let watching: Promise<Watcher | undefined>
   setImmediate(() => {
     watching = crawl('')
       .then(async () => {
-        const watcher = await subscribe(cwd, processEvents, {
-          backend: opts.backend,
-          ignore: ignored,
-        })
+        if (hasSnapshot) {
+          hasSnapshot = false
+
+          // Process events from after the last snapshot.
+          const events = await getEventsSince(
+            cwd,
+            opts.snapshotPath!,
+            watcherOpts
+          )
+          if (events.length) {
+            skipMutation = true
+            await processEvents(null, events)
+            skipMutation = false
+          }
+        }
+
+        // Start watching.
+        return subscribe(cwd, processEvents, watcherOpts)
+      })
+      .then(watcher => {
         emitter.emit('ready')
         return watcher
-      })
-      .catch(onError)
+      }, onError)
   })
 
   function onError(err: Error) {
@@ -103,15 +127,21 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   }
 
   function addFile(file: string, stats: fs.Stats) {
-    binaryInsert(files, file, sortPaths)
-    emitter.emit(CREATE, file, stats, cwd)
-    emitter.emit(ALL, CREATE, file, stats, cwd)
+    if (!skipMutation) {
+      binaryInsert(files, file, sortPaths)
+    }
+    if (!hasSnapshot) {
+      emitter.emit(CREATE, file, stats, cwd)
+      emitter.emit(ALL, CREATE, file, stats, cwd)
+    }
   }
 
   // Promise may reject for permission error.
   function addDir(dir: string) {
-    dirs.add(dir)
-    binaryInsert(files, dir, sortPaths)
+    if (!skipMutation) {
+      dirs.add(dir)
+      binaryInsert(files, dir, sortPaths)
+    }
     return crawl(dir)
   }
 
@@ -134,7 +164,9 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   }
 
   function addIgnored(path: string) {
-    binaryInsert(ignored, path, sortPaths)
+    if (!skipMutation) {
+      binaryInsert(ignored, path, sortPaths)
+    }
   }
 
   function removeIgnored(path: string, recursive?: boolean) {
@@ -152,6 +184,7 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
     if (err) {
       return onError(err)
     }
+    console.log(events)
     const dirQueue = new Set<string>()
     eventLoop: for (let i = 0; i < events.length; i++) {
       const { type, path } = events[i]
@@ -241,9 +274,12 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
       return this
     },
     close: (): any =>
-      watching.then(watcher => {
-        watcher?.unsubscribe()
-      }),
+      Promise.all([
+        snapshot(cwd, opts.snapshotPath, watcherOpts),
+        watching.then(watcher => {
+          watcher?.unsubscribe()
+        }),
+      ]),
   }
 }
 

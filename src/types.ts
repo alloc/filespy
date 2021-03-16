@@ -60,6 +60,12 @@ export namespace FileSpy {
      */
     skip?: string[]
     /**
+     * Store a snapshot for faster reboots.
+     *
+     * When a snapshot exists, initial `create` events are skipped.
+     */
+    snapshotPath?: string
+    /**
      * Choose a specific watcher backend.
      *
      * The available backends listed in priority order:

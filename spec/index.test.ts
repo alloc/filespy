@@ -7,6 +7,8 @@ import fs = require('saxon/sync')
 const cwd = path.resolve(__dirname, '__fixtures__')
 process.chdir(cwd)
 
+const snapshotPath = path.resolve('../../node_modules/.filespy/snapshot.txt')
+
 type Change =
   | { type: 'add'; file: string }
   | { type: 'rename'; oldPath: string; newPath: string }
@@ -132,10 +134,59 @@ describe('filespy', () => {
       expectEvents(listener, [['create', 'b.js']])
     })
   })
+
+  describe('snapshot caching', () => {
+    fit('emits events from after the snapshot', async () => {
+      const listener = jest.fn()
+      spy = filespy(cwd, { snapshotPath }).on('all', listener)
+      await getReadyPromise(spy)
+
+      // Since snapshot does not exist, initial crawl emits events.
+      expect(getEvents(listener).length).toBeGreaterThan(0)
+
+      // Create a directory to rename when not watching.
+      addDir('xxx', ['secret.js'])
+
+      // Close the watcher so a snapshot is created.
+      await spy.close()
+      await delay(100)
+
+      addDir('test', ['a', 'b'])
+      rename('xxx', 'zzz')
+      await delay(100)
+
+      spy = filespy(cwd, { snapshotPath }).on('all', listener)
+      await getReadyPromise(spy)
+
+      // It skips "create" events from initial crawl.
+      expectEvents(listener, [
+        ['create', 'test/a'],
+        ['create', 'test/b'],
+      ])
+
+      expect(spy.files).toMatchInlineSnapshot(`
+        Array [
+          "foo",
+          "foo/bar",
+          "foo/bar.ts",
+          "foo/bar/baz",
+          "foo/bar/index.js",
+          "foo/bar/baz/index.ts",
+          "test",
+          "test",
+          "test/a",
+          "test/a",
+          "test/b",
+          "test/b",
+        ]
+      `)
+    })
+  })
 })
 
 afterEach(async () => {
   await spy?.close()
+  fs.remove(snapshotPath)
   changes.reverse().forEach(change => {
     if (change.type == 'add') {
       fs.remove(change.file, true)
@@ -156,6 +207,16 @@ function addDir(dir: string, children: string[]) {
   children.forEach(file => {
     fs.write(path.join(dir, file), '')
   })
+}
+
+function removeDir(dir: string) {
+  const idx = changes.findIndex(
+    change => change.type == 'add' && change.file == dir
+  )
+  if (idx >= 0) {
+    changes.splice(idx, 1)
+    fs.remove(dir, true)
+  }
 }
 
 function addFile(file: string) {
