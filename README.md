@@ -78,6 +78,9 @@ interface {
   /** Permission error or watcher failure */
   error(error: Error): void
 
+  /** Directory was crawled */
+  crawl(dir: string, cwd: string): void
+
   /** Watcher is ready */
   ready(): void
 
