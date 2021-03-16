@@ -42,6 +42,9 @@ export interface FileSpy {
     ) => void
   ): this
 
+  /** List all watched descendants of a directory. */
+  list(dir: string): string[]
+
   close(): Promise<void>
 }
 

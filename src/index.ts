@@ -247,6 +247,17 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
       emitter.on(event, callback)
       return this
     },
+    list(dir) {
+      const fromIndex = files.indexOf(dir) + 1
+      if (fromIndex > 0) {
+        let i = fromIndex
+        while (i < files.length && isDescendant(files[i], dir)) {
+          i += 1
+        }
+        return files.slice(fromIndex, i)
+      }
+      return []
+    },
     close: (): any =>
       watching.then(watcher => {
         watcher?.unsubscribe()
