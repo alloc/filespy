@@ -318,14 +318,16 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
       queue.push([event, args])
     } else {
       emitting = true
-      emitSync(event, args)
-      queue.forEach((e, i) => {
-        if (!e) return
-        queue[i] = null
-        emitSync(...e)
+      setImmediate(() => {
+        emitSync(event, args)
+        queue.forEach((e, i) => {
+          if (!e) return
+          queue[i] = null
+          emitSync(...e)
+        })
+        queue = []
+        emitting = false
       })
-      queue = []
-      emitting = false
     }
   }
 }
