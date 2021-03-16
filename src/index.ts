@@ -350,6 +350,7 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
     let elapsed = 0
     for (let e: QueuedEmit; i < queue.length && elapsed < 100; i++) {
       if ((e = queue[i])) {
+        queue[i] = null
         const start = Date.now()
         try {
           emitSync(...e)
