@@ -27,7 +27,7 @@ export interface FileSpy {
   on(event: 'ready', callback: () => void): this
 
   /** Crawling failed or the watcher failed. */
-  on(event: 'error', callback: (error: Error) => void): this
+  on(event: 'error', callback: (error: FileSpy.Error) => void): this
 
   on(
     event: 'all',
@@ -68,4 +68,17 @@ export namespace FileSpy {
      */
     backend?: BackendType
   }
+
+  export type Error = AccessError | UnknownError
+
+  interface AccessError extends GlobalError {
+    code: 'EACCES'
+    path: string
+  }
+
+  interface UnknownError extends GlobalError {
+    code?: undefined
+  }
 }
+
+type GlobalError = Error
