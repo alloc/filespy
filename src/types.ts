@@ -23,7 +23,10 @@ export interface FileSpy {
 
   on(event: 'delete', callback: (name: string, cwd: string) => void): this
 
-  /** The initial crawl is done and the watcher is active. */
+  /** A directory has been crawled. */
+  on(event: 'crawl', callback: (dir: string, cwd: string) => void): this
+
+  /** The watcher is ready. */
   on(event: 'ready', callback: () => void): this
 
   /** Crawling failed or the watcher failed. */

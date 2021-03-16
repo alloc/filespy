@@ -70,7 +70,7 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   // Promise may reject for permission error.
   async function crawl(dir: string): Promise<any> {
     const children = await fsp.readdir(join(cwd, dir))
-    return Promise.all(
+    await Promise.all(
       children.map(name => {
         const file = join(dir, name)
         return skip(file, name)
@@ -78,6 +78,7 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
           : addPath(file, name).catch(onError)
       })
     )
+    emit('crawl', dir, cwd)
   }
 
   // Promise may reject for permission error.
