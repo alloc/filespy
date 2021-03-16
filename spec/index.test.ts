@@ -167,6 +167,14 @@ describe('filespy', () => {
             "EACCES",
           ]
         `)
+
+        // Related files are skipped.
+        expect(spy.skipped).toMatchInlineSnapshot(`
+          Array [
+            "xxx/a",
+            "xxx/b",
+          ]
+        `)
       })
     })
 })
