@@ -57,26 +57,27 @@ describe('filespy', () => {
     })
 
     // Disabled by default since manual cleanup is required.
-    xit('tolerates permission errors', async () => {
-      // You must delete "xxx" manually after testing.
-      fs.mkdir('xxx/a', 0o333)
-      fs.mkdir('xxx/b', 0o333)
+    if (process.env.CI)
+      it('tolerates permission errors', async () => {
+        // You must delete "xxx" manually after testing.
+        fs.mkdir('xxx/a', 0o333)
+        fs.mkdir('xxx/b', 0o333)
 
-      const errors: Error[] = []
-      spy = filespy(cwd).on('error', e => errors.push(e))
-      await getReadyPromise(spy, true)
+        const errors: Error[] = []
+        spy = filespy(cwd).on('error', e => errors.push(e))
+        await getReadyPromise(spy, true)
 
-      // Errors do not crash the crawler.
-      expect(spy.files.length).toBeGreaterThan(0)
+        // Errors do not crash the crawler.
+        expect(spy.files.length).toBeGreaterThan(0)
 
-      // Multiple permission errors can be emitted.
-      expect(errors.map(e => (e as any).code)).toMatchInlineSnapshot(`
-        Array [
-          "EACCES",
-          "EACCES",
-        ]
-      `)
-    })
+        // Multiple permission errors can be emitted.
+        expect(errors.map(e => (e as any).code)).toMatchInlineSnapshot(`
+          Array [
+            "EACCES",
+            "EACCES",
+          ]
+        `)
+      })
   })
 
   describe('watching', () => {
