@@ -1,3 +1,4 @@
 codecov:
   ignore:
     - "spec/__fixtures__"
+    - "src/types.ts"
