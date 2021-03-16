@@ -22,7 +22,6 @@ const alwaysFalse = () => false
 const CREATE = 'create'
 const UPDATE = 'update'
 const DELETE = 'delete'
-const CUD_RE = /^[cud]/
 
 export { FileSpy }
 
@@ -37,7 +36,7 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   const emitter = new EventEmitter()
   const emit = wrapEmit((event, args) => {
     emitter.emit(event, ...args)
-    if (CUD_RE.test(event)) {
+    if (event == CREATE || event == UPDATE || event == DELETE) {
       event == DELETE && args.splice(1, 0, null)
       emitter.emit('all', event, ...args)
     }
