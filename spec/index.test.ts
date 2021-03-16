@@ -28,7 +28,17 @@ describe('filespy', () => {
         ['create', 'foo/bar.ts'],
         ['create', 'foo/bar/index.js'],
         ['create', 'foo/bar/baz/index.ts'],
-        // and "crawl" once per directory
+      ])
+    })
+
+    it('emits "crawl" once per directory', async () => {
+      const listener = jest.fn()
+      spy = filespy(cwd).on('crawl', dir => {
+        listener('crawl', dir)
+      })
+
+      await getReadyPromise(spy)
+      expectEvents(listener, [
         ['crawl', 'foo/bar/baz'],
         ['crawl', 'foo/bar'],
         ['crawl', 'foo'],
@@ -71,6 +81,7 @@ describe('filespy', () => {
 
       const listener = jest.fn()
       spy.on('all', listener)
+      spy.on('crawl', dir => listener('crawl', dir))
 
       addDir('test', ['a'])
       addDir('test2', [])
@@ -93,6 +104,7 @@ describe('filespy', () => {
       await delay(throttleDelay)
       const listener = jest.fn()
       spy.on('all', listener)
+      spy.on('crawl', dir => listener('crawl', dir))
 
       rename('test', 'test2')
 
