@@ -22,7 +22,8 @@
 - Exposes the paths being watched
 - Exposes the paths that were skipped
 - Ensures file paths use forward slashes
-- Protects against reentrancy with event queueing
+- Protects against reentrancy by using `setImmediate` before emitting
+- Splits up long-running listeners with `setImmediate`
 
 &nbsp;
 
