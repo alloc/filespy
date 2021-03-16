@@ -290,7 +290,9 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
     if (!crawling) {
       // Try to cancel out a "delete" event.
       if (event == CREATE) {
-        const index = queue.findIndex(e => e && e[0] == DELETE && e[1] == file)
+        const index = queue.findIndex(
+          e => e && e[0] == DELETE && e[1][0] == file
+        )
         if (~index) {
           queue[index] = null
           event = UPDATE
@@ -301,7 +303,7 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
       // Try to update a "create" or "update" event.
       else if (event == UPDATE) {
         const index = queue.findIndex(
-          e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1] == file
+          e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1][0] == file
         )
         if (~index) {
           queue[index]![1][1] = stats
@@ -312,7 +314,7 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
       // Try to cancel out a "create" or "update" event.
       else if (event == DELETE) {
         const index = queue.findIndex(
-          e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1] == file
+          e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1][0] == file
         )
         if (~index) {
           const [event] = queue[index]!
