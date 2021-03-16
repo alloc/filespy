@@ -1,4 +1,4 @@
-import { EventType, BackendType } from '@parcel/watcher'
+import type { EventType, BackendType } from '@parcel/watcher'
 import * as fs from 'fs'
 
 export interface FileSpy {
