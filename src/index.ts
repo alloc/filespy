@@ -47,14 +47,18 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   setImmediate(() => {
     watching = crawl('')
       .then(async () => {
-        emit = emitter.emit.bind(emitter)
-        emitQueue!.forEach(([event, args]) => emit(event, ...args))
-        emitQueue = null
-
+        // Start watching before processing crawl events.
         const watcher = await watch(cwd, processEvents, {
           backend: opts.backend,
           ignore: skipped,
         })
+
+        // Keep queueing events until the queue is fully processed.
+        emitQueue!.forEach(([event, args]) => {
+          emitter.emit(event, ...args)
+        })
+        emit = emitter.emit.bind(emitter)
+        emitQueue = null
 
         emit('ready')
         return watcher
