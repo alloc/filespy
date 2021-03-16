@@ -19,10 +19,10 @@ const { S_IFMT, S_IFDIR } = fs.constants
 const alwaysTrue = () => true
 const alwaysFalse = () => false
 
-const ALL = 'all'
 const CREATE = 'create'
 const UPDATE = 'update'
 const DELETE = 'delete'
+const CUD_RE = /^[cud]/
 
 export { FileSpy }
 
@@ -35,30 +35,23 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   const files: string[] = []
   const skipped: string[] = []
   const emitter = new EventEmitter()
-
-  // Emits are queued until initial crawl is completed.
-  let emitQueue: [event: string, args: any[]][] | null = []
-  let emit = (event: string, ...args: any[]) => {
-    emitQueue!.push([event, args])
-  }
+  const emit = wrapEmit((event, args) => {
+    emitter.emit(event, ...args)
+    if (CUD_RE.test(event)) {
+      event == DELETE && args.splice(1, 0, null)
+      emitter.emit('all', event, ...args)
+    }
+  })
 
   // Wait for listeners to be attached.
   let watching: Promise<Watcher | undefined>
   setImmediate(() => {
     watching = crawl('')
       .then(async () => {
-        // Start watching before processing crawl events.
         const watcher = await watch(cwd, processEvents, {
           backend: opts.backend,
           ignore: skipped,
         })
-
-        // Keep queueing events until the queue is fully processed.
-        emitQueue!.forEach(([event, args]) => {
-          emitter.emit(event, ...args)
-        })
-        emit = emitter.emit.bind(emitter)
-        emitQueue = null
 
         emit('ready')
         return watcher
@@ -121,7 +114,6 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   function addFile(file: string, stats: fs.Stats) {
     binaryInsert(files, file, sortPaths)
     emit(CREATE, file, stats, cwd)
-    emit(ALL, CREATE, file, stats, cwd)
   }
 
   // Promise may reject for permission error.
@@ -142,7 +134,6 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
         break
       }
       emit(DELETE, file, cwd)
-      emit(ALL, DELETE, file, null, cwd)
     }
 
     files.splice(fromIndex, i - fromIndex)
@@ -235,7 +226,6 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
         } else {
           emit(DELETE, file, cwd)
         }
-        emit(ALL, type, file, stats, cwd)
       } else if (type == DELETE) {
         removeSkipped(file)
       }
@@ -269,4 +259,73 @@ function isDescendant(file: string, dir: string) {
 
 function join(parent: string, child: string) {
   return parent ? parent + '/' + child : child
+}
+
+type QueuedEmit = [event: string, args: any[]] | null
+
+function wrapEmit(emitSync: (event: string, args: any[]) => void) {
+  // All emits are queued until "ready" event.
+  let emitting = true
+
+  // The queue is reset whenever fully processed.
+  let queue: QueuedEmit[] = []
+
+  return (event: string, ...args: any[]) => {
+    const [file, stats, cwd] = args
+
+    // Try to cancel out a "delete" event.
+    if (event == CREATE) {
+      const index = queue.findIndex(e => e && e[0] == DELETE && e[1] == file)
+      if (~index) {
+        queue[index] = null
+        event = UPDATE
+        args = [file, stats, cwd]
+      }
+    }
+
+    // Try to update a "create" or "update" event.
+    else if (event == UPDATE) {
+      const index = queue.findIndex(
+        e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1] == file
+      )
+      if (~index) {
+        queue[index]![1][1] = stats
+        return
+      }
+    }
+
+    // Try to cancel out a "create" or "update" event.
+    else if (event == DELETE) {
+      const index = queue.findIndex(
+        e => e && (e[0] == CREATE || e[0] == UPDATE) && e[1] == file
+      )
+      if (~index) {
+        const [event] = queue[index]!
+        queue[index] = null
+        if (event == CREATE) {
+          return // Skip "delete" event since "create" was never handled.
+        }
+      }
+    }
+
+    // Process crawl events now that the watcher is ready.
+    else if (event == 'ready') {
+      emitting = false
+    }
+
+    // Listeners may be blocking us, or the watcher is initializing.
+    if (emitting) {
+      queue.push([event, args])
+    } else {
+      emitting = true
+      emitSync(event, args)
+      queue.forEach((e, i) => {
+        if (!e) return
+        queue[i] = null
+        emitSync(...e)
+      })
+      queue = []
+      emitting = false
+    }
+  }
 }
