@@ -55,6 +55,10 @@ spy.dirs // Set of watched directories.
 spy.files // Sorted list of watched paths (even directories).
 spy.skipped // Sorted list of existing paths that were skipped.
 
+// List all watched paths within a watched directory.
+// Returned paths are relative to cwd.
+spy.list('foo/bar')
+
 // Stop watching.
 spy.close()
 ```
