@@ -3,6 +3,7 @@ import { execSync } from 'child_process'
 import * as path from 'path'
 import { dequal } from 'dequal'
 import delay from 'delay'
+import isWindows = require('is-windows')
 import fs = require('saxon/sync')
 
 const cwd = path.resolve(__dirname, '__fixtures__')
@@ -149,8 +150,13 @@ describe('filespy', () => {
         // Errors do not crash the crawler.
         expect(spy.files.length).toBeGreaterThan(0)
 
+        if (isWindows()) {
+          // TODO: reproduce permission error on Windows
+          return expect(errors).toEqual([])
+        }
+
         if (!errors.some(e => e.code)) {
-          console.log(errors)
+          return expect(errors).not.toEqual(errors)
         }
 
         // Multiple permission errors can be emitted.

@@ -5,12 +5,14 @@ dependencies:
   slash: 3.0.0
 devDependencies:
   '@alloc/prettier-config': 1.0.0
+  '@types/is-windows': 1.0.0
   '@types/jest': 26.0.20
   delay: 5.0.0
   dequal: 2.0.2
   esbuild: 0.8.57
   esbuild-jest: /@alloc/esbuild-jest/0.3.5_esbuild@0.8.57
   filespy: 'link:'
+  is-windows: 1.0.2
   jest: 26.6.3
   prettier: 2.2.1
   rollup: 2.41.2
@@ -608,6 +610,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-anKkLmZZ+xm4p8JWBf4hElkM4XR+EZeA2M9BAkkTldmcyDY4mbdIJnRghDJH3Ov5ooY7/UAoENtmdMSkaAd7Cw==
+  /@types/is-windows/1.0.0:
+    dev: true
+    resolution:
+      integrity: sha512-tJ1rq04tGKuIJoWIH0Gyuwv4RQ3+tIu7wQrC0MV47raQ44kIzXSSFKfrxFUOWVRvesoF7mrTqigXmqoZJsXwTg==
   /@types/istanbul-lib-coverage/2.0.3:
     dev: true
     resolution:
@@ -4051,6 +4057,7 @@ packages:
 specifiers:
   '@alloc/prettier-config': ^1.0.0
   '@parcel/watcher': ^2.0.0-alpha.10
+  '@types/is-windows': ^1.0.0
   '@types/jest': ^26.0.20
   binary-insert: ^1.2.1
   delay: ^5.0.0
@@ -4059,6 +4066,7 @@ specifiers:
   esbuild-jest: npm:@alloc/esbuild-jest@^0.3.0
   filespy: link:.
   glob-regex: ^0.3.2
+  is-windows: ^1.0.2
   jest: ^26.6.3
   prettier: ^2.0.5
   rollup: ^2.38.1
