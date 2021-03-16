@@ -56,9 +56,9 @@ describe('filespy', () => {
       await getReadyPromise(spy)
       expect(spy.skipped).toMatchInlineSnapshot(`
         Array [
-          "foo/bar.ts",
           "foo/bar/baz",
           "foo/bar/index.js",
+          "foo/bar.ts",
         ]
       `)
     })
