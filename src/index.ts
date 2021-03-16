@@ -3,7 +3,7 @@ import {
   AsyncSubscription as Watcher,
   Event,
 } from '@parcel/watcher'
-import { dirname } from 'path'
+import { dirname, resolve } from 'path'
 import { EventEmitter } from 'events'
 import { binaryInsert } from 'binary-insert'
 import assert = require('assert')
@@ -27,7 +27,7 @@ const DELETE = 'delete'
 export { FileSpy }
 
 export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
-  cwd = slash(cwd).replace(/\/$/, '')
+  cwd = slash(resolve(cwd)).replace(/\/$/, '')
 
   const only = createMatcher(opts.only) || alwaysTrue
   const skip = createMatcher(opts.skip) || alwaysFalse
