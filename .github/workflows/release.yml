@@ -25,6 +25,12 @@ jobs:
             args: [--frozen-lockfile]
 
       - name: Test
-        run: yarn test --coverage && npx codecov
+        run: yarn test --coverage
+
+      - name: Reset fixtures
+        run: git clean -df
+
+      - name: Upload coverage
+        run: npx codecov
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
