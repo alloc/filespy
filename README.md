@@ -18,6 +18,7 @@
 - Handles renamed directories properly
 - Exposes the paths being watched
 - Exposes the paths that were skipped
+- Ensures file paths use forward slashes
 
 &nbsp;
 
