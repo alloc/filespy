@@ -1,5 +1,4 @@
 import { FileSpy, filespy } from 'filespy'
-import { execSync } from 'child_process'
 import * as path from 'path'
 import { dequal } from 'dequal'
 import delay from 'delay'
