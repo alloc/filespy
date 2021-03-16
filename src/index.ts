@@ -265,7 +265,7 @@ type QueuedEmit = [event: string, args: any[]] | null
 
 function wrapEmit(emitSync: (event: string, args: any[]) => void) {
   // All emits are queued until "ready" event.
-  let emitting = true
+  let processing = true
 
   // The queue is reset whenever fully processed.
   let queue: QueuedEmit[] = []
@@ -310,24 +310,39 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
 
     // Process crawl events now that the watcher is ready.
     else if (event == 'ready') {
-      emitting = false
+      processing = false
     }
 
     // Listeners may be blocking us, or the watcher is initializing.
-    if (emitting) {
-      queue.push([event, args])
-    } else {
-      emitting = true
+    queue.push([event, args])
+    if (!processing) {
+      processing = true
       setImmediate(() => {
-        emitSync(event, args)
-        queue.forEach((e, i) => {
-          if (!e) return
-          queue[i] = null
-          emitSync(...e)
-        })
-        queue = []
-        emitting = false
+        processQueue(0)
       })
+    }
+  }
+
+  function processQueue(i: number) {
+    let elapsed = 0
+    for (let e: QueuedEmit; i < queue.length && elapsed < 100; i++) {
+      if ((e = queue[i])) {
+        const start = Date.now()
+        try {
+          emitSync(...e)
+        } catch (e) {
+          process.emit('uncaughtException', e)
+        }
+        elapsed += Date.now() - start
+      }
+    }
+    if (i < queue.length) {
+      setImmediate(() => {
+        processQueue(i)
+      })
+    } else {
+      queue = []
+      processing = false
     }
   }
 }
