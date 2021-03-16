@@ -24,6 +24,7 @@
 - Ensures file paths use forward slashes
 - Protects against reentrancy by using `setImmediate` before emitting
 - Splits up long-running listeners with `setImmediate`
+- Crashes if you don't handle `error` events
 
 &nbsp;
 
