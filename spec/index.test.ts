@@ -5,6 +5,8 @@ import delay from 'delay'
 import isWindows = require('is-windows')
 import fs = require('saxon/sync')
 
+const throttleDelay = process.env.CI ? 200 : 100
+
 const cwd = path.resolve(__dirname, '__fixtures__')
 process.chdir(cwd)
 
@@ -68,7 +70,7 @@ describe('filespy', () => {
       addDir('test', ['a'])
       addDir('test2', [])
       addFile('test/b')
-      await delay(100)
+      await delay(throttleDelay)
 
       expectEvents(listener, [
         ['create', 'test/a'],
@@ -81,13 +83,13 @@ describe('filespy', () => {
       await getReadyPromise(spy)
       addDir('test', ['a', 'b'])
 
-      await delay(100)
+      await delay(throttleDelay)
       const listener = jest.fn()
       spy.on('all', listener)
 
       rename('test', 'test2')
 
-      await delay(100)
+      await delay(throttleDelay)
       expectEvents(listener, [
         ['delete', 'test/a'],
         ['delete', 'test/b'],
@@ -109,13 +111,13 @@ describe('filespy', () => {
       // Add a skipped directory.
       addDir('test', ['a'])
 
-      await delay(100)
+      await delay(throttleDelay)
       expectEvents(listener, [])
 
       // Add a file whose directory was skipped *after* watcher init.
       addFile('test/b')
 
-      await delay(100)
+      await delay(throttleDelay)
       expectEvents(listener, [])
     })
 
@@ -129,7 +131,7 @@ describe('filespy', () => {
       addFile('a.md')
       addFile('b.js')
 
-      await delay(100)
+      await delay(throttleDelay)
       expectEvents(listener, [['create', 'b.js']])
     })
   })
@@ -179,7 +181,7 @@ afterEach(async () => {
     }
   })
   changes.length = 0
-  return delay(100)
+  return delay(throttleDelay)
 })
 
 function addDir(dir: string, children: string[], mode?: number) {
