@@ -330,12 +330,12 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
     if (!processing) {
       processing = true
       setImmediate(() => {
-        processQueue(0)
+        processEmits(0)
       })
     }
   }
 
-  function processQueue(i: number) {
+  function processEmits(i: number) {
     let elapsed = 0
     for (let e: QueuedEmit; i < queue.length && elapsed < 100; i++) {
       if ((e = queue[i])) {
@@ -350,7 +350,7 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
     }
     if (i < queue.length) {
       setImmediate(() => {
-        processQueue(i)
+        processEmits(i)
       })
     } else {
       queue = []
