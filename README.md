@@ -59,32 +59,34 @@ spy.close()
 
 ## Events
 
-- `all` event
-  - `event`: "create", "update", or "delete"
-  - `file`: path relative to `cwd`
-  - `stats`: the [`fs.Stats`](https://nodejs.org/api/fs.html#fs_class_fs_stats) object returned by `lstat`
-  - `cwd`: the root directory
+```ts
+interface {
+  all(
+    event: 'create' | 'update' | 'delete',
+    /** Path relative to cwd */
+    file: string,
+    /** Equals null for "delete" events */
+    stats: fs.Stats | null, // https://nodejs.org/api/fs.html#fs_class_fs_stats
+    /** The root directory */
+    cwd: string
+  ): void
 
-- `error` event
-  - `error`: an `Error` object
-    - `.code`: equals `EACCES` for permission errors
+  /** Permission error or watcher failure */
+  error(error: Error): void
 
-- `ready` event
-  - no arguments
+  /** Watcher is ready */
+  ready(): void
 
-- `create` event
-  - `file`
-  - `stats`
-  - `cwd`
+  /** File created */
+  create(file: string, stats: fs.Stats, cwd: string): void
 
-- `update` event
-  - `file`
-  - `stats`
-  - `cwd`
+  /** File changed */
+  update(file: string, stats: fs.Stats, cwd: string): void
 
-- `delete` event
-  - `file`
-  - `cwd`
+  /** File deleted */
+  delete(file: string, cwd: string): void
+}
+```
 
 &nbsp;
 
