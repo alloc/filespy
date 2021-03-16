@@ -136,6 +136,35 @@ describe('filespy', () => {
     })
   })
 
+  describe('list method', () => {
+    it('works with watched directory', async () => {
+      spy = filespy(cwd)
+      await getReadyPromise(spy)
+
+      expect(spy.list('foo/bar')).toMatchInlineSnapshot(`
+        Array [
+          "foo/bar/baz",
+          "foo/bar/baz/index.ts",
+          "foo/bar/index.js",
+        ]
+      `)
+    })
+
+    it('returns empty array for skipped path', async () => {
+      spy = filespy(cwd, { skip: ['bar'] })
+      await getReadyPromise(spy)
+
+      expect(spy.list('foo/bar')).toEqual([])
+    })
+
+    it('returns empty array for non-existent path', async () => {
+      spy = filespy(cwd)
+      await getReadyPromise(spy)
+
+      expect(spy.list('unknown')).toEqual([])
+    })
+  })
+
   // Disabled by default since manual cleanup is required.
   if (process.env.CI)
     describe('permission errors', () => {
