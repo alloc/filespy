@@ -22,6 +22,7 @@
 - Exposes the paths being watched
 - Exposes the paths that were skipped
 - Ensures file paths use forward slashes
+- Protects against reentrancy with event queueing
 
 &nbsp;
 
