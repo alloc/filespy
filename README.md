@@ -55,6 +55,35 @@ spy.skipped // Sorted list of existing paths that were skipped.
 spy.close()
 ```
 
+### Events
+
+- `all` event
+  - `event`: "create", "update", or "delete"
+  - `file`: path relative to `cwd`
+  - `stats`: the [`fs.Stats`](https://nodejs.org/api/fs.html#fs_class_fs_stats) object returned by `lstat`
+  - `cwd`: the root directory
+
+- `error` event
+  - `error`: an `Error` object
+    - `.code`: equals `EACCES` for permission errors
+
+- `ready` event
+  - no arguments
+
+- `create` event
+  - `file`
+  - `stats`
+  - `cwd`
+
+- `update` event
+  - `file`
+  - `stats`
+  - `cwd`
+
+- `delete` event
+  - `file`
+  - `cwd`
+
 ### Pattern syntax
 
 Filespy mixes globbing with regular expressions, a concept borrowed from [Recrawl](https://github.com/aleclarson/recrawl).
