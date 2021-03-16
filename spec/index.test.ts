@@ -28,6 +28,11 @@ describe('filespy', () => {
         ['create', 'foo/bar.ts'],
         ['create', 'foo/bar/index.js'],
         ['create', 'foo/bar/baz/index.ts'],
+        // and "crawl" once per directory
+        ['crawl', 'foo/bar/baz'],
+        ['crawl', 'foo/bar'],
+        ['crawl', 'foo'],
+        ['crawl', ''],
       ])
     })
 
@@ -73,8 +78,10 @@ describe('filespy', () => {
       await delay(throttleDelay)
 
       expectEvents(listener, [
+        ['crawl', 'test2'],
         ['create', 'test/a'],
         ['create', 'test/b'],
+        ['crawl', 'test'],
       ])
     })
 
@@ -95,6 +102,7 @@ describe('filespy', () => {
         ['delete', 'test/b'],
         ['create', 'test2/a'],
         ['create', 'test2/b'],
+        ['crawl', 'test2'],
       ])
     })
 
