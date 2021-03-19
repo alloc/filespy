@@ -3,6 +3,7 @@ import {
   AsyncSubscription as Watcher,
   Event,
 } from '@parcel/watcher'
+import { waitForPath } from 'wait-for-path'
 import { dirname, resolve } from 'path'
 import { EventEmitter } from 'events'
 import { binaryInsert } from 'binary-insert'
@@ -45,7 +46,8 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   // Wait for listeners to be attached.
   let watching: Promise<Watcher | undefined>
   setImmediate(() => {
-    watching = crawl('')
+    watching = waitForPath(cwd)
+      .then(() => crawl(''))
       .then(async () => {
         const watcher = await watch(cwd, processEvents, {
           backend: opts.backend,
