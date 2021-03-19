@@ -25,6 +25,7 @@
 - Protects against reentrancy by using `setImmediate` before emitting
 - Splits up long-running listeners with `setImmediate`
 - Crashes if you don't handle `error` events
+- Waits for root directory to exist
 
 &nbsp;
 
