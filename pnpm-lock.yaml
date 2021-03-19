@@ -3,6 +3,7 @@ dependencies:
   binary-insert: 1.2.1
   glob-regex: 0.3.2
   slash: 3.0.0
+  wait-for-path: 0.1.1
 devDependencies:
   '@alloc/prettier-config': 1.0.0
   '@types/is-windows': 1.0.0
@@ -3910,6 +3911,11 @@ packages:
       node: '>=10'
     resolution:
       integrity: sha512-4tzD0mF8iSiMiNs30BiLO3EpfGLZUT2MSX/G+o7ZywDzliWQ3OPtTZ0PTC3B3ca1UAf4cJMHB+2Bf56EriJuRA==
+  /wait-for-path/0.1.1:
+    dev: false
+    hasBin: true
+    resolution:
+      integrity: sha512-ugNJWGvdUC0n/SsRsd9lT293tS//IeBuui6egMDS98dIxcCMDUeqhjbYSx3Ur/hond+qucQJct+zRxJPQkZE5w==
   /walker/1.0.7:
     dependencies:
       makeerror: 1.0.11
@@ -4075,3 +4081,4 @@ specifiers:
   saxon: ^0.2.11
   slash: ^3.0.0
   typescript: ^4.0.0
+  wait-for-path: ^0.1.1
