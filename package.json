@@ -9,7 +9,9 @@
   "types": "dist/filespy.d.ts",
   "files": [
     "src",
-    "dist"
+    "dist",
+    "vendor/wait-for-path/src",
+    "!*.test.ts"
   ],
   "scripts": {
     "test": "jest",
