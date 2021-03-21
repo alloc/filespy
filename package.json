@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@alloc/prettier-config": "^1.0.0",
+    "@cush/exec": "^1.7.1",
     "@types/is-windows": "^1.0.0",
     "@types/jest": "^26.0.20",
     "delay": "^5.0.0",

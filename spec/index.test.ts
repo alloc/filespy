@@ -2,6 +2,7 @@ import { FileSpy, filespy } from 'filespy'
 import * as path from 'path'
 import { dequal } from 'dequal'
 import delay from 'delay'
+import exec = require('@cush/exec')
 import isWindows = require('is-windows')
 import fs = require('saxon/sync')
 
@@ -10,12 +11,7 @@ const throttleDelay = process.env.CI ? 200 : 100
 const cwd = path.resolve(__dirname, '__fixtures__')
 process.chdir(cwd)
 
-type Change =
-  | { type: 'add'; file: string }
-  | { type: 'rename'; oldPath: string; newPath: string }
-
 let spy: FileSpy
-let changes: Change[] = []
 
 describe('filespy', () => {
   describe('initial crawl', () => {
@@ -106,7 +102,7 @@ describe('filespy', () => {
       spy.on('all', listener)
       spy.on('crawl', dir => listener('crawl', dir))
 
-      rename('test', 'test2')
+      fs.rename('test', 'test2')
 
       await delay(throttleDelay)
       expectEvents(listener, [
@@ -230,23 +226,13 @@ describe('filespy', () => {
 
 afterEach(async () => {
   await spy?.close()
-  changes.reverse().forEach(change => {
-    if (change.type == 'add') {
-      fs.remove(change.file, true)
-    } else if (change.type == 'rename') {
-      fs.rename(change.newPath, change.oldPath)
-    }
-  })
-  changes.length = 0
+  exec.sync('git clean -df __fixtures__', { cwd: __dirname })
+  exec.sync('git checkout HEAD __fixtures__', { cwd: __dirname })
   return delay(throttleDelay)
 })
 
 function addDir(dir: string, children: string[], mode?: number) {
   fs.mkdir(dir, mode)
-  changes.push({
-    type: 'add',
-    file: dir,
-  })
   children.forEach(file => {
     fs.write(path.join(dir, file), '')
   })
@@ -254,19 +240,6 @@ function addDir(dir: string, children: string[], mode?: number) {
 
 function addFile(file: string) {
   fs.write(file, '')
-  changes.push({
-    type: 'add',
-    file,
-  })
-}
-
-function rename(oldPath: string, newPath: string) {
-  fs.rename(oldPath, newPath)
-  changes.push({
-    type: 'rename',
-    oldPath,
-    newPath,
-  })
 }
 
 function getReadyPromise(spy: FileSpy, skipErrors?: boolean) {
