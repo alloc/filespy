@@ -6,6 +6,7 @@ dependencies:
   wait-for-path: 0.1.1
 devDependencies:
   '@alloc/prettier-config': 1.0.0
+  '@cush/exec': 1.7.1
   '@types/is-windows': 1.0.0
   '@types/jest': 26.0.20
   delay: 5.0.0
@@ -342,6 +343,13 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-v9kIhKwjeZThiWrLmj0y17CWoyddASLj9O2yvbZkbvw/N3rWOYy9zkV66ursAoVr0mV15bL8g0c4QZUE6cdDoQ==
+  /@cush/exec/1.7.1:
+    dependencies:
+      shell-quote: 1.7.2
+      type-error: 1.0.3
+    dev: true
+    resolution:
+      integrity: sha512-VhUZ39FqmWhXqMiKKsV1XzcNt0jTnc/vYYCn1TYHttrW1QGYWweD+f7MlgPABfLsAQDhYLVTvOjPdfY+1o0nsA==
   /@istanbuljs/load-nyc-config/1.1.0:
     dependencies:
       camelcase: 5.3.1
@@ -3417,6 +3425,10 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
+  /shell-quote/1.7.2:
+    dev: true
+    resolution:
+      integrity: sha512-mRz/m/JVscCrkMyPqHc/bczi3OQHkLTqXHEFu0zDhK/qfv3UcOA4SVmRCLmos4bhjr9ekVQubj/R7waKapmiQg==
   /shellwords/0.1.1:
     dev: true
     optional: true
@@ -3785,6 +3797,10 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
+  /type-error/1.0.3:
+    dev: true
+    resolution:
+      integrity: sha512-hlNA4NwwjtL9clb8nv+x/5C45uzxND+N+h+/y3z2dYdubGSmdtNtJjHVH4E68ZHR98Bkav4ACf1lmTZepc/4sg==
   /type-fest/0.11.0:
     dev: true
     engines:
@@ -4062,6 +4078,7 @@ packages:
       integrity: sha512-aePbxDmcYW++PaqBsJ+HYUFwCdv4LVvdnhBy78E57PIor8/OVvhMrADFFEDh8DHDFRv/O9i3lPhsENjO7QX0+A==
 specifiers:
   '@alloc/prettier-config': ^1.0.0
+  '@cush/exec': ^1.7.1
   '@parcel/watcher': ^2.0.0-alpha.10
   '@types/is-windows': ^1.0.0
   '@types/jest': ^26.0.20
