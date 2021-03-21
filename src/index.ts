@@ -62,7 +62,11 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
 
   function onError(err: FileSpy.Error) {
     if (err.code == 'EACCES') {
-      addSkipped(err.path.slice(cwd.length + 1))
+      const file = err.path.slice(cwd.length + 1)
+      addSkipped(file)
+      if (dirs.has(file)) {
+        removeDir(file)
+      }
     }
     emit('error', err)
     return undefined

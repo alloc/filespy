@@ -255,6 +255,16 @@ describe('filespy', () => {
           ]
         `)
     })
+
+    it('removes directory from "files" and "dirs"', async () => {
+      fs.mkdir('xxx', 0o333)
+
+      spy = filespy(cwd)
+      await getReadyPromise(spy, true)
+
+      expect(spy.files).not.toContain('xxx')
+      expect(spy.dirs).not.toContain('xxx')
+    })
   })
 })
 
