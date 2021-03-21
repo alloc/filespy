@@ -303,6 +303,11 @@ function wrapEmit(emitSync: (event: string, args: any[]) => void) {
   let queue: QueuedEmit[] = []
 
   return (event: string, ...args: any[]) => {
+    // Ensure fatal errors are processed synchronously.
+    if (event == 'error' && args[0].code != 'EACCES') {
+      return emitSync(event, args)
+    }
+
     const [file, stats, cwd] = args
     if (!crawling) {
       // Try to cancel out a "delete" event.
