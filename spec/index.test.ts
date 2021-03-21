@@ -223,6 +223,22 @@ describe('filespy', () => {
       spy = filespy(cwd)
       await spy.close()
     })
+
+    it('can close before root dir exists', done => {
+      spy = filespy(path.join(cwd, 'unknown'))
+      delay(10).then(() => {
+        let closed = false
+        Promise.race([
+          delay(10),
+          spy.close().then(() => {
+            closed = true
+          }),
+        ]).then(() => {
+          expect(closed).toBeTruthy()
+          done()
+        })
+      })
+    })
   })
 
   describe('permission errors', () => {

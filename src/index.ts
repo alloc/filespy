@@ -3,7 +3,7 @@ import {
   AsyncSubscription as Watcher,
   Event,
 } from '@parcel/watcher'
-import { waitForPath } from 'wait-for-path'
+import { waitForPath, WaitForPathResult } from 'wait-for-path'
 import { dirname, resolve } from 'path'
 import { EventEmitter } from 'events'
 import { binaryInsert } from 'binary-insert'
@@ -44,12 +44,14 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   })
 
   let closed = false
+  let waiting: WaitForPathResult | undefined
   let watching: Promise<Watcher | undefined> | undefined
 
   // Wait for listeners to be attached.
   setImmediate(() => {
     if (closed) return
-    watching = waitForPath(cwd)
+    waiting = waitForPath(cwd)
+    watching = waiting
       .then(() => crawl(''))
       .then(async () => {
         if (closed) return
@@ -270,6 +272,7 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
     },
     async close() {
       closed = true
+      waiting?.close()
       return watching?.then(watcher => {
         watcher?.unsubscribe()
       })
