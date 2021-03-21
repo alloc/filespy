@@ -152,6 +152,7 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
       let i = fromIndex
       if (recursive)
         while (++i < skipped.length && isDescendant(skipped[i], path)) {}
+      else i++
 
       skipped.splice(fromIndex, i - fromIndex)
     }

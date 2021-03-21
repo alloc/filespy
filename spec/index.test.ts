@@ -150,6 +150,43 @@ describe('filespy', () => {
       await delay(throttleDelay)
       expectEvents(listener, [['create', 'b.js']])
     })
+
+    describe('when skipped file is deleted', () => {
+      it('cleans up the "skipped" array', async () => {
+        spy = filespy(cwd, {
+          only: ['/foo/bar/'],
+          skip: ['*.js'],
+        })
+        await getReadyPromise(spy)
+
+        // Add a file skipped by "skip" globs.
+        addFile('foo/bar/foo.js')
+        // Add a file skipped by "only" globs.
+        addFile('foo/index.ts')
+
+        // Remove a pre-crawl file skipped by "skip" globs.
+        fs.remove('foo/bar/index.js')
+        // Remove a pre-crawl file skipped by "only" globs.
+        fs.remove('foo/bar.ts')
+
+        await delay(throttleDelay)
+
+        // Remove post-crawl skipped files.
+        fs.remove('foo/bar/foo.js')
+        fs.remove('foo/index.ts')
+
+        await delay(throttleDelay)
+
+        expect(spy.skipped).not.toContain('foo/bar/foo.js')
+        expect(spy.skipped).not.toContain('foo/index.ts')
+
+        // Since these files were skipped on initial crawl,
+        // we don't receive events for them, and so we can't
+        // remove them from `skipped` when they're deleted.
+        expect(spy.skipped).toContain('foo/bar/index.js')
+        expect(spy.skipped).toContain('foo/bar.ts')
+      })
+    })
   })
 
   describe('list method', () => {
