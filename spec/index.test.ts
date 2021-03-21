@@ -181,47 +181,44 @@ describe('filespy', () => {
     })
   })
 
-  // Disabled by default since manual cleanup is required.
-  if (process.env.CI)
-    describe('permission errors', () => {
-      it('tolerates them', async () => {
-        // You must delete "xxx" manually after testing.
-        fs.mkdir('xxx/a', 0o333)
-        fs.mkdir('xxx/b', 0o333)
+  describe('permission errors', () => {
+    it('tolerates them', async () => {
+      fs.mkdir('xxx/a', 0o333)
+      fs.mkdir('xxx/b', 0o333)
 
-        const errors: FileSpy.Error[] = []
-        spy = filespy(cwd).on('error', e => errors.push(e))
-        await getReadyPromise(spy, true)
+      const errors: FileSpy.Error[] = []
+      spy = filespy(cwd).on('error', e => errors.push(e))
+      await getReadyPromise(spy, true)
 
-        // Errors do not crash the crawler.
-        expect(spy.files.length).toBeGreaterThan(0)
+      // Errors do not crash the crawler.
+      expect(spy.files.length).toBeGreaterThan(0)
 
-        if (isWindows()) {
-          // TODO: reproduce permission error on Windows
-          return expect(errors).toEqual([])
-        }
+      if (isWindows()) {
+        // TODO: reproduce permission error on Windows
+        return expect(errors).toEqual([])
+      }
 
-        if (!errors.some(e => e.code)) {
-          return expect(errors).not.toEqual(errors)
-        }
+      if (!errors.some(e => e.code)) {
+        return expect(errors).not.toEqual(errors)
+      }
 
-        // Multiple permission errors can be emitted.
-        expect(errors.map(e => e.code)).toMatchInlineSnapshot(`
+      // Multiple permission errors can be emitted.
+      expect(errors.map(e => e.code)).toMatchInlineSnapshot(`
           Array [
             "EACCES",
             "EACCES",
           ]
         `)
 
-        // Related files are skipped.
-        expect(spy.skipped).toMatchInlineSnapshot(`
+      // Related files are skipped.
+      expect(spy.skipped).toMatchInlineSnapshot(`
           Array [
             "xxx/a",
             "xxx/b",
           ]
         `)
-      })
     })
+  })
 })
 
 afterEach(async () => {
