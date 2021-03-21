@@ -225,16 +225,19 @@ describe('filespy', () => {
     })
 
     it('can close before root dir exists', done => {
+      const onError = jest.fn()
       spy = filespy(path.join(cwd, 'unknown'))
+      spy.on('error', onError)
       delay(10).then(() => {
         let closed = false
         Promise.race([
-          delay(10),
+          delay(100),
           spy.close().then(() => {
             closed = true
           }),
         ]).then(() => {
           expect(closed).toBeTruthy()
+          expect(onError).not.toBeCalled()
           done()
         })
       })

@@ -51,17 +51,19 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
   setImmediate(() => {
     if (closed) return
     waiting = waitForPath(cwd)
-    watching = waiting
-      .then(() => crawl(''))
-      .then(async () => {
-        if (closed) return
-        const watcher = await watch(cwd, processEvents, {
-          backend: opts.backend,
-          ignore: skipped,
-        })
+    waiting
+      .then(() => {
+        watching = crawl('').then(async () => {
+          if (closed) return
+          const watcher = await watch(cwd, processEvents, {
+            backend: opts.backend,
+            ignore: skipped,
+          })
 
-        emit('ready')
-        return watcher
+          emit('ready')
+          return watcher
+        })
+        return watching
       })
       .catch(onError)
   })
