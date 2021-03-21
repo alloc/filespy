@@ -218,6 +218,13 @@ describe('filespy', () => {
     })
   })
 
+  describe('close method', () => {
+    it('can close immediately', async () => {
+      spy = filespy(cwd)
+      await spy.close()
+    })
+  })
+
   describe('permission errors', () => {
     it('tolerates them', async () => {
       fs.mkdir('xxx/a', 0o333)

@@ -43,12 +43,16 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
     }
   })
 
+  let closed = false
+  let watching: Promise<Watcher | undefined> | undefined
+
   // Wait for listeners to be attached.
-  let watching: Promise<Watcher | undefined>
   setImmediate(() => {
+    if (closed) return
     watching = waitForPath(cwd)
       .then(() => crawl(''))
       .then(async () => {
+        if (closed) return
         const watcher = await watch(cwd, processEvents, {
           backend: opts.backend,
           ignore: skipped,
@@ -264,10 +268,12 @@ export function filespy(cwd: string, opts: FileSpy.Options = {}): FileSpy {
       }
       return []
     },
-    close: (): any =>
-      watching.then(watcher => {
+    async close() {
+      closed = true
+      return watching?.then(watcher => {
         watcher?.unsubscribe()
-      }),
+      })
+    },
   }
 }
 
